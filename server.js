@@ -1,8 +1,8 @@
 import express from 'express';
-import { lerMensagens, salvarMensagens } from "./story.js";
+import { lerMensagens, salvarMensagens } from "./store.js";
 
 const app = express();
-const PORT = 3000;
+const PORT = 4000;
 
 app.get("/", (req, res) => res.send("Servidor rodando!"));
 app.get("/status", (req, res) => res.json({ status: "Online", sprint: 4 }));
@@ -66,6 +66,6 @@ app.get("/gravar-mensagem-correta", (req, res) => {
     });
 });
 
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT, () => {
     console.log(`Servidor em http://localhost:${PORT}`);
 });

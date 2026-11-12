@@ -1,13 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
-
-
-
 const PASTA = new URL("./data/", import.meta.url);
 const ARQUIVO = new URL("./data/mensagens.json", import.meta.url);
-
-
-
 
 export async function lerMensagens() {
     try {
@@ -20,9 +14,6 @@ export async function lerMensagens() {
         throw erro; 
     }
 }
-
-
-
 
 export async function salvarMensagens(mensagens) {
     await mkdir(PASTA, { recursive: true });
