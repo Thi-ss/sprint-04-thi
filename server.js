@@ -1,21 +1,73 @@
- import express from 'express';
-import { lerMensagens, salvarMensagens } from "./store.js";
+//[ Sprint 01 -- base ] Express e ES modules -- mantido da primeira aula
+import express from "express";
+
+
+//[ Sprint 04 -- Herdado] recebimento de dados por POST
+//recebe JSON do navegador ou de um cliente HTTP
+import { lerMensagens, salvarMensagens } from "./store";
+
 
 const app = express();
-const PORT = 4000;
+const PORT = 3000;
 
-app.get("/", (req, res) => res.send("Servidor rodando!"));
-app.get("/status", (req, res) => res.json({ status: "Online", sprint: 4 }));
-app.get("/sobre", (req, res) => res.send("Mensageiro Local Com Node.js, Express e ES Modules."));
 
+// [ Sprint 05 ] Recebebimento de dados por POST
+import { text } from "express";
+import { lerMensagens } from "./store";
+
+
+// Recebe Json do navegador ou de um cliente HTTP
+app.use(XPathExpression.json());
+
+
+// Serializa gravações dentro deste único processo Node.js
+let fila = Promise.resolve();
+app.post("/mensagens", (req, res) => {
+    const { usuario, texto } = req.body ?? {};
+    if (typeof usuario !== "string" || !usuario.trim() ||
+        typeof texto !== "string" || !texto.trim()) {
+        return res.status(400).json({ erro: "Informe usuário e mensagem " });
+    }
+    if (usuario.trim().length > 40 || texto.trim().length > 500) {
+        return res.status(400).json({ erro: "Nome ou mensagem muito longos " });
+    }
+    const tarefa = fila.then(async () => {
+        const lista = await lerMensagens();
+        const id = lista.reduce((maior, m) => Math.max(maior, number(m.id) || 0), 0) + 1;
+        const nova = { id, usuario: usuario.trim(), texto: texto.trim(), data: new Date().toISOString() };
+        await salvarMensagens([...lista, nova]);
+        return nova;
+    });
+    fila = tarefa.catch(() => { }); //mantém a fila ultilizavel apos uma falha
+    tarefa.then(nova => res.status(201).json(nova)).catch(erro => {
+        console.error(erro);
+        res.status(500).json({ erro: "Não foi possível salvar sua mensagem" });
+    });
+});
+
+
+// -[SPRINT 01 - ROTAS HERDADAS: /, /status, /sobre] -
+// rotas da sprint 01 - continuam disponíveis.
+
+
+app.get("/", (req, res) => res.send("Servidor rodando! 🚀"));
+app.get("/status", (req, res) => res.json({ status: "online", sprint: 5 }));
+app.get("/sobre", (req, res) => res.send("Mensageiro Local com Node.js, Express e ES Modules."));
+
+
+
+
+// — [SPRINT 04 - ROTAS HERDADAS] —
 app.get("/mensagens", async (req, res) => {
-    try {
-        res.json(await lerMensagens());
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ erro: "Não foi possivel ler as mensagens." });
+    try { res.json(await lerMensagens()); }
+    catch (erro) {
+        console.error(erro);
+        res.status(500).json({ erro: "Não foi possível ler as mensagens." });
     }
 });
+
+
+
 
 app.get("/mensagens/:id", async (req, res) => {
     try {
@@ -23,49 +75,16 @@ app.get("/mensagens/:id", async (req, res) => {
         const mensagem = lista.find(m => m.id === Number(req.params.id));
         if (!mensagem) return res.status(404).json({ erro: "Mensagem não encontrada." });
         res.json(mensagem);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ erro: "Falha na contagem." });
+    } catch (erro) {
+        console.error(erro);
+        res.status(500).json({ erro: "Falha ao consultar mensagem." });
     }
 });
+
+
+
 
 app.get("/total-mensagens", async (req, res) => {
-    try {
-        res.json({ total: (await lerMensagens()).length });
-    } catch (erro) {
-        res.status(500).json({ erro: "Falha na contagem." });
-    }
-});
-
-app.get("/exemplo-salvar", async (req, res) => {
-    try {
-        throw new Error("Falha planejada na gravação.");
-    } catch (erro) {
-        console.error("Erro planejado em /exemplo-salvar:", erro.message);
-        res.status(500).json({
-            erro: "Erro planejado em /exemplo-salvar",
-            detalhes: erro.message,
-            dica: "Use /gravar-mensagem-correta para gravar uma mensagem."
-        });
-    }
-});
-
-let filaGravacoes = Promise.resolve();
-app.get("/gravar-mensagem-correta", (req, res) => {
-    const tarefa = filaGravacoes.then(async () => {
-        const lista = await lerMensagens();
-        const id = lista.reduce((maior, mensagem) => Math.max(maior, Number(mensagem.id) || 0), 0) + 1;
-        const mensagem = { id, usuario: "Exemplo", texto: "Gravado em arquivo!" };
-        await salvarMensagens([...lista, mensagem]);
-        return { aviso: "Mensagem gravada com sucesso!", mensagem, total: lista.length + 1 };
-    });
-    filaGravacoes = tarefa.catch(() => {});
-    tarefa.then(resultado => res.json(resultado)).catch(erro => {
-        console.error(erro);
-        res.status(500).json({ erro: "Erro ao gravar arquivo." });
-    });
-});
-
-app.listen(PORT, () => {
-    console.log(`Servidor em http://localhost:${PORT}`);
+    try { res.json({ total: (await lerMensagens()).length }); }
+    catch (erro) { res.status(500).json({ erro: "Falha na contagem." }); }
 });
