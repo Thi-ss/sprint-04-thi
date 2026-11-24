@@ -1,6 +1,6 @@
 //[ Sprint 01 -- base ] Express e ES modules -- mantido da primeira aula
 import express from "express";
-
+import { lerMensagens, salvarMensagens } from "./store.js";
 
 //[ Sprint 04 -- Herdado] recebimento de dados por POST
 //recebe JSON do navegador ou de um cliente HTTP
@@ -94,6 +94,38 @@ app.get("/total-mensagens", async (req, res) => {
     catch (erro) { res.status(500).json({ erro: "Falha na contagem." }); }
 });
 
+// EXERCÍCIO 3.2
+// antes: app.get("/mensagens/:id", async (req, res) => {
+//    try {
+//        const lista = await lerMensagens();
+//        const mensagem = lista.find(m => m.id === Number(req.params.id));
+//        if (!mensagem) return res.status(404).json({ erro: "Mensagem não encontrada." });
+//        res.json(mensagem);
+//    } catch (erro) {
+//        console.error(erro);
+//        res.status(500).json({ erro: "Falha ao consultar mensagem." });
+//    }
+//});
+
+//agora:
+app.get("/mensagens", async (req, res) => {
+    try {
+        res.json(await lerMensagens());
+    } catch (error) {
+        res.status(500).json({ erro: "Erro na leitura" });
+    }
+});
+
+app.get("/exemplo-salvar", async (req, res) => {
+  try {
+    const lista = await lerMensagens();
+    lista.push({ id: Date.now(), usuario: "Aluno", texto: "Mensagem gravada no disco!" });
+    await salvarMensagens(lista);
+    res.json({ gravado: true, total: lista.length });
+  } catch (erro) {
+    res.status(500).json({ erro: "Falha ao gravar" });
+  }
+});
 
 app.listen(PORT, () => {
     console.log(`Servidor em http://localhost:${PORT}`);

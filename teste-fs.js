@@ -29,21 +29,19 @@ salvarHistorico(lindos);
 
 // Criando uma função assíncrona
 async function lerDadosSeguros(nomeArquivo) {
-
     try {
         // Isso irá ler o conteúdo do arquivo inserido na função por meio de 'nomeArquivo'
-        await readFile(nomeArquivo, "utf8");
+        const conteudo = await readFile(nomeArquivo, "utf8");
 
         // Irá transformar o conteúdo do arquivo em JSON e exibi-lo
-        JSON.parse(nomeArquivo);
-        return nomeArquivo;
+        return JSON.parse(conteudo);
+
     } catch (erro) {
         if (erro.code === "ENOENT") {
             return []
         } else {
             throw erro;
         }
-
     }
 
 };
